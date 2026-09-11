@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if query %}Search: {{ query }}{% else %}All Products{% endif %} — Lushera{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Search Header -->
+    <div class="max-w-3xl mx-auto text-center mb-12">
+      <div class="relative mb-6">
+        <input
+          type="search"
+          id="liveSearchInput"
+          value="{{ query }}"
+          placeholder="Search for products..."
+          autocomplete="off"
+          class="w-full px-6 py-4 pr-16 border-2 border-gray-200 rounded-full focus:border-rose focus:outline-none text-lg transition"
+        >
+        <!-- Search Icon -->
+        <div class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+          <svg id="searchIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <!-- Spinner -->
+          <svg id="searchSpinner" class="w-6 h-6 animate-spin text-rose hidden" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Browse Categories -->
+      <div>
+        <p class="text-sm text-gray-500 mb-4">Browse Categories:</p>
+        <div class="flex flex-wrap gap-3 justify-center">
+          {% for category in all_categories %}
+          <a href="{% url 'subcategory_list' category.slug %}"
+             class="flex items-center gap-2 px-5 py-2.5 bg-cream border-2 border-transparent rounded-full text-sm font-medium hover:border-rose hover:text-rose hover:bg-white transition-all duration-200">
+            {% if category.category_type == 'makeup' %}💄
+            {% elif category.category_type == 'face' %}🧴
+            {% elif category.category_type == 'hair' %}💇
+            {% elif category.category_type == 'wellness' %}🌿
+            {% elif category.category_type == 'men' %}👔
+            {% elif category.category_type == 'women' %}👗
+            {% elif category.category_type == 'kids' %}🧒
+            {% else %}✨{% endif %}
+            {{ category.name }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="bg-cream p-5 rounded-2xl mb-10 flex flex-wrap gap-4 items-center">
+      <input
+        type="number"
+        id="filterMinPrice"
+        placeholder="Min Price"
+        class="w-32 px-4 py-3 border-2 border-gray-200 rounded-full text-sm focus:border-rose focus:outline-none bg-white"
+      >
+      <input
+        type="number"
+        id="filterMaxPrice"
+        placeholder="Max Price"
+        class="w-32 px-4 py-3 border-2 border-gray-200 rounded-full text-sm focus:border-rose focus:outline-none bg-white"
+      >
+      <select id="filterSort" class="px-4 py-3 border-2 border-gray-200 rounded-full text-sm focus:border-rose focus:outline-none bg-white cursor-pointer">
+        <option value="newest">Newest First</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+        <option value="name">Name: A-Z</option>
+      </select>
+      <button onclick="applyFilters()" class="bg-rose text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-rose-dark transition uppercase tracking-wide">
+        Apply
+      </button>
+      <button onclick="clearFilters()" class="px-6 py-3 border-2 border-charcoal rounded-full text-sm font-medium hover:bg-charcoal hover:text-white transition uppercase tracking-wide">
+        Clear
+      </button>
+    </div>
+
+    <!-- Results Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 id="resultsTitle" class="text-3xl font-serif font-bold mb-1">
+          {% if query %}Search Results{% else %}All Products{% endif %}
+        </h1>
+        <p id="resultsCount" class="text-gray-500">{{ products|length }} products found</p>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div id="productsGrid">
+      {% include 'store/partials/product_grid.html' %}
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let searchTimeout = null;
+
+  const searchInput   = document.getElementById('liveSearchInput');
+  const searchIcon    = document.getElementById('searchIcon');
+  const searchSpinner = document.getElementById('searchSpinner');
+  const productsGrid  = document.getElementById('productsGrid');
+  const resultsTitle  = document.getElementById('resultsTitle');
+  const resultsCount  = document.getElementById('resultsCount');
+
+  function showSpinner() {
+    searchIcon.classList.add('hidden');
+    searchSpinner.classList.remove('hidden');
+  }
+
+  function hideSpinner() {
+    searchIcon.classList.remove('hidden');
+    searchSpinner.classList.add('hidden');
+  }
+
+  function fetchProducts() {
+    const q        = searchInput.value.trim();
+    const minPrice = document.getElementById('filterMinPrice').value;
+    const maxPrice = document.getElementById('filterMaxPrice').value;
+    const sort     = document.getElementById('filterSort').value;
+
+    const params = new URLSearchParams();
+    if (q)        params.set('q', q);
+    if (minPrice) params.set('min_price', minPrice);
+    if (maxPrice) params.set('max_price', maxPrice);
+    if (sort)     params.set('sort', sort);
+    params.set('ajax', '1');
+
+    showSpinner();
+
+    fetch(`{% url 'search' %}?${params.toString()}`)
+      .then(r => r.json())
+      .then(data => {
+        hideSpinner();
+        productsGrid.innerHTML = data.html;
+        resultsCount.textContent = `${data.count} products found`;
+        resultsTitle.textContent = q ? `Results for "${q}"` : 'All Products';
+        // Update URL without reload
+        const newUrl = q ? `?q=${encodeURIComponent(q)}` : '?';
+        window.history.replaceState({}, '', newUrl);
+      })
+      .catch(() => hideSpinner());
+  }
+
+  // Live search with debounce
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(fetchProducts, 350);
+  });
+
+  function applyFilters() { fetchProducts(); }
+
+  function clearFilters() {
+    document.getElementById('filterMinPrice').value = '';
+    document.getElementById('filterMaxPrice').value = '';
+    document.getElementById('filterSort').value = 'newest';
+    fetchProducts();
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} — Lushera{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Breadcrumb -->
+    <nav class="flex mb-8 text-sm" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-2 flex-wrap">
+        <li><a href="{% url 'home' %}" class="text-gray-500 hover:text-rose">Home</a></li>
+        <li><span class="text-gray-400">/</span></li>
+        <li><a href="{% url 'product_list' product.subcategory.slug %}" class="text-gray-500 hover:text-rose">{{ product.subcategory.name }}</a></li>
+        <li><span class="text-gray-400">/</span></li>
+        <li class="text-charcoal font-medium">{{ product.name }}</li>
+      </ol>
+    </nav>
+
+    <!-- Product Details -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
+      
+      <!-- Product Images -->
+      <div>
+        <div class="relative overflow-hidden rounded-2xl aspect-[3/4] mb-4 bg-cream">
+          {% if product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImage" class="w-full h-full object-cover">
+          {% else %}
+          <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center" id="mainImage">
+            <svg class="w-32 h-32 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          {% endif %}
+          
+          {% if product.tag %}
+          <span class="absolute top-6 left-6 bg-{% if product.tag == 'sale' %}red{% elif product.tag == 'new' %}green{% else %}orange{% endif %}-500 text-white text-sm font-bold px-4 py-2 rounded-full uppercase">
+            {{ product.get_tag_display }}
+          </span>
+          {% endif %}
+        </div>
+        
+        <!-- Thumbnails -->
+        {% if product.images.all %}
+        <div class="grid grid-cols-4 gap-4">
+          {% if product.image %}
+          <div class="cursor-pointer border-2 border-rose rounded-xl overflow-hidden aspect-[3/4]" onclick="changeImage('{{ product.image.url }}', this)">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+          </div>
+          {% endif %}
+          {% for img in product.images.all %}
+          <div class="cursor-pointer border-2 border-gray-200 hover:border-rose rounded-xl overflow-hidden aspect-[3/4] transition" onclick="changeImage('{{ img.image.url }}', this)">
+            <img src="{{ img.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Product Info -->
+      <div>
+        <p class="text-sm text-rose font-medium uppercase tracking-widest mb-2">
+          {{ product.subcategory.category.name }}
+        </p>
+        
+        <h1 class="text-4xl font-serif font-bold mb-4">{{ product.name }}</h1>
+        
+        <div class="flex items-center gap-4 mb-6">
+          <div class="flex items-center gap-1 text-gold">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+            <span class="text-sm text-gray-600 ml-2">(4.8) 250+ Reviews</span>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-4 mb-6">
+          <span id="currentPrice" class="text-4xl font-bold text-rose">Rs. {{ product.final_price|floatformat:0 }}</span>
+          {% if product.discount_price %}
+          <span id="originalPrice" class="text-2xl text-gray-400 line-through">Rs. {{ product.price|floatformat:0 }}</span>
+          <span id="discountBadge" class="bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+            Save {{ product.discount_percentage|floatformat:0 }}%
+          </span>
+          {% endif %}
+        </div>
+        
+        <p class="text-gray-600 leading-relaxed mb-6">
+          {{ product.description }}
+        </p>
+        
+        <!-- Stock Status -->
+        <div id="stockStatus" class="mb-6">
+          {% if product.is_in_stock %}
+          <p class="flex items-center gap-2 text-green-600 font-semibold">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            In Stock — {{ product.total_stock }} available
+          </p>
+          {% else %}
+          <p class="flex items-center gap-2 text-red-600 font-semibold">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+            Out of Stock
+          </p>
+          {% endif %}
+        </div>
+        
+        <!-- Variants -->
+        {% if product.variants.exists %}
+        <form method="post" action="{% url 'add_to_cart' product.id %}" id="addToCartForm">
+          {% csrf_token %}
+          <input type="hidden" name="variant_id" id="selectedVariantId" value="">
+          
+          <!-- Color/Fragrance Selection -->
+          {% if product.available_colors %}
+          <div class="mb-6">
+            <p class="font-semibold mb-3 uppercase tracking-wide text-sm">Select Shade/Fragrance</p>
+            <div class="flex flex-wrap gap-3">
+              {% regroup product.variants.all by color as color_groups %}
+              {% for cg in color_groups %}
+              {% if cg.grouper %}
+              <button 
+                type="button" 
+                class="color-btn px-6 py-3 border-2 border-gray-300 rounded-full text-sm font-medium hover:border-rose transition"
+                data-color="{{ cg.grouper }}"
+              >
+                {{ cg.list.0.get_color_display }}
+              </button>
+              {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Size Selection -->
+          <div class="mb-6">
+            <p class="font-semibold mb-3 uppercase tracking-wide text-sm">Select Size</p>
+            <div class="flex flex-wrap gap-3">
+              {% for variant in product.variants.all %}
+              <button 
+                type="button" 
+                class="variant-btn px-6 py-3 border-2 border-gray-300 rounded-full text-sm font-medium hover:border-rose transition {% if not variant.is_in_stock %}opacity-50 cursor-not-allowed{% endif %}"
+                data-variant-id="{{ variant.id }}"
+                data-size="{{ variant.size }}"
+                data-color="{{ variant.color }}"
+                data-stock="{{ variant.stock }}"
+                data-price="{{ variant.display_price|floatformat:0 }}"
+                data-discount-price="{% if variant.display_discount_price %}{{ variant.display_discount_price|floatformat:0 }}{% else %}0{% endif %}"
+                {% if not variant.is_in_stock %}disabled{% endif %}
+              >
+                {{ variant.size }}
+              </button>
+              {% endfor %}
+            </div>
+            <p id="sizeError" class="text-red-500 text-sm mt-2 hidden">Please select a size</p>
+          </div>
+          
+          <!-- Add to Cart -->
+          <div class="flex gap-4 mb-8">
+            <button 
+              type="submit" 
+              id="addToCartBtn"
+              class="flex-1 bg-rose text-white py-4 rounded-full font-semibold hover:bg-rose-dark transition text-lg"
+              {% if not product.is_in_stock %}disabled{% endif %}
+            >
+              Add to Cart
+            </button>
+            <a href="{% url 'toggle_wishlist' product.id %}" class="w-14 h-14 border-2 border-charcoal rounded-full flex items-center justify-center hover:bg-charcoal hover:text-white transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+            </a>
+          </div>
+        </form>
+        {% else %}
+        <!-- No Variants -->
+        {% if product.is_in_stock %}
+        <form method="post" action="{% url 'add_to_cart' product.id %}">
+          {% csrf_token %}
+          <div class="flex gap-4 mb-8">
+            <button type="submit" class="flex-1 bg-rose text-white py-4 rounded-full font-semibold hover:bg-rose-dark transition text-lg">
+              Add to Cart
+            </button>
+            <a href="{% url 'toggle_wishlist' product.id %}" class="w-14 h-14 border-2 border-charcoal rounded-full flex items-center justify-center hover:bg-charcoal hover:text-white transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+            </a>
+          </div>
+        </form>
+        {% else %}
+        <button disabled class="w-full bg-gray-300 text-gray-500 py-4 rounded-full font-semibold cursor-not-allowed text-lg mb-8">
+          Out of Stock
+        </button>
+        {% endif %}
+        {% endif %}
+        
+        <!-- Product Features -->
+        <div class="border-t pt-6 space-y-4">
+          <div class="flex items-center gap-3 text-sm text-gray-600">
+            <svg class="w-5 h-5 text-rose" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+            Free shipping on orders over Rs. 3,000
+          </div>
+          <div class="flex items-center gap-3 text-sm text-gray-600">
+            <svg class="w-5 h-5 text-rose" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            100% Authentic Products
+          </div>
+          <div class="flex items-center gap-3 text-sm text-gray-600">
+            <svg class="w-5 h-5 text-rose" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            7-Day Easy Returns
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related %}
+    <div>
+      <h2 class="text-3xl font-serif font-bold mb-8 text-center">You May Also Like</h2>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {% for p in related %}
+        <div class="group">
+          <div class="relative overflow-hidden rounded-2xl aspect-[3/4] mb-4 bg-cream">
+            <a href="{% url 'product_detail' p.slug %}">
+              {% if p.image %}
+              <img src="{{ p.image.url }}" alt="{{ p.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+              {% else %}
+              <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              {% endif %}
+            </a>
+            <button class="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-rose hover:text-white">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="text-center">
+            <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">{{ p.subcategory.name }}</p>
+            <h3 class="font-semibold mb-2 line-clamp-2">
+              <a href="{% url 'product_detail' p.slug %}" class="hover:text-rose transition">{{ p.name }}</a>
+            </h3>
+            <span class="text-rose font-bold">Rs. {{ p.final_price|floatformat:0 }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Image Gallery
+function changeImage(src, element) {
+  document.getElementById('mainImage').src = src;
+  document.querySelectorAll('.cursor-pointer').forEach(el => {
+    el.classList.remove('border-rose');
+    el.classList.add('border-gray-200');
+  });
+  element.classList.remove('border-gray-200');
+  element.classList.add('border-rose');
+}
+
+// Variant Selection
+const variantButtons = document.querySelectorAll('.variant-btn');
+const colorButtons = document.querySelectorAll('.color-btn');
+const variantInput = document.getElementById('selectedVariantId');
+const stockStatus = document.getElementById('stockStatus');
+const addToCartBtn = document.getElementById('addToCartBtn');
+const sizeError = document.getElementById('sizeError');
+const form = document.getElementById('addToCartForm');
+
+let selectedColor = '';
+
+// Color selection
+colorButtons.forEach(btn => {
+  btn.addEventListener('click', function() {
+    colorButtons.forEach(b => {
+      b.classList.remove('border-rose', 'bg-rose', 'text-white');
+      b.classList.add('border-gray-300');
+    });
+    this.classList.remove('border-gray-300');
+    this.classList.add('border-rose', 'bg-rose', 'text-white');
+    selectedColor = this.getAttribute('data-color');
+    
+    // Filter size buttons
+    variantButtons.forEach(vBtn => {
+      if (!selectedColor || vBtn.getAttribute('data-color') === selectedColor) {
+        vBtn.style.display = '';
+      } else {
+        vBtn.style.display = 'none';
+      }
+    });
+    
+    // Reset selection
+    variantButtons.forEach(b => {
+      b.classList.remove('border-rose', 'bg-rose', 'text-white');
+      b.classList.add('border-gray-300');
+    });
+    if (variantInput) variantInput.value = '';
+  });
+});
+
+// Size selection
+variantButtons.forEach(btn => {
+  btn.addEventListener('click', function() {
+    if (this.disabled) return;
+    
+    variantButtons.forEach(b => {
+      b.classList.remove('border-rose', 'bg-rose', 'text-white');
+      b.classList.add('border-gray-300');
+    });
+    this.classList.remove('border-gray-300');
+    this.classList.add('border-rose', 'bg-rose', 'text-white');
+    
+    const variantId = this.getAttribute('data-variant-id');
+    const stock = parseInt(this.getAttribute('data-stock'));
+    const price = this.getAttribute('data-price');
+    const discountPrice = this.getAttribute('data-discount-price');
+    
+    if (variantInput) variantInput.value = variantId;
+    if (sizeError) sizeError.classList.add('hidden');
+    
+    // Update price
+    const currentPriceEl = document.getElementById('currentPrice');
+    const originalPriceEl = document.getElementById('originalPrice');
+    const discountBadgeEl = document.getElementById('discountBadge');
+    
+    if (currentPriceEl && price) {
+      if (discountPrice && discountPrice !== '0') {
+        // Has discount
+        currentPriceEl.textContent = `Rs. ${discountPrice}`;
+        if (originalPriceEl) {
+          originalPriceEl.textContent = `Rs. ${price}`;
+          originalPriceEl.style.display = '';
+        }
+        if (discountBadgeEl) {
+          const discount = Math.round(((parseFloat(price) - parseFloat(discountPrice)) / parseFloat(price)) * 100);
+          discountBadgeEl.textContent = `Save ${discount}%`;
+          discountBadgeEl.style.display = '';
+        }
+      } else {
+        // No discount
+        currentPriceEl.textContent = `Rs. ${price}`;
+        if (originalPriceEl) originalPriceEl.style.display = 'none';
+        if (discountBadgeEl) discountBadgeEl.style.display = 'none';
+      }
+    }
+    
+    // Update stock status
+    if (stockStatus) {
+      if (stock > 0) {
+        stockStatus.innerHTML = `
+          <p class="flex items-center gap-2 text-green-600 font-semibold">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            In Stock — ${stock} available
+          </p>
+        `;
+        if (addToCartBtn) addToCartBtn.disabled = false;
+      } else {
+        stockStatus.innerHTML = `
+          <p class="flex items-center gap-2 text-red-600 font-semibold">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+            Out of Stock
+          </p>
+        `;
+        if (addToCartBtn) addToCartBtn.disabled = true;
+      }
+    }
+  });
+});
+
+// Form validation
+if (form) {
+  form.addEventListener('submit', function(e) {
+    if (variantButtons.length > 0 && (!variantInput || !variantInput.value)) {
+      e.preventDefault();
+      if (sizeError) {
+        sizeError.classList.remove('hidden');
+        sizeError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

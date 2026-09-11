@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login — Lushera{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-white min-h-screen">
+  <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <h1 class="text-4xl font-serif font-bold mb-3">Welcome Back</h1>
+      <p class="text-gray-600">Login to your Lushera account</p>
+    </div>
+
+    <!-- Login Form -->
+    <div class="bg-cream rounded-2xl p-8 shadow-lg">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Email/Username -->
+        <div>
+          <label for="id_username" class="block text-sm font-semibold text-gray-700 mb-2">
+            Email or Username
+          </label>
+          <input 
+            type="text" 
+            name="username" 
+            id="id_username"
+            required
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose focus:outline-none transition"
+            placeholder="Enter your email or username"
+          >
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label for="id_password" class="block text-sm font-semibold text-gray-700 mb-2">
+            Password
+          </label>
+          <input 
+            type="password" 
+            name="password" 
+            id="id_password"
+            required
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose focus:outline-none transition"
+            placeholder="Enter your password"
+          >
+        </div>
+
+        <!-- Remember Me & Forgot Password -->
+        <div class="flex items-center justify-between">
+          <label class="flex items-center">
+            <input type="checkbox" name="remember" class="w-4 h-4 text-rose border-gray-300 rounded focus:ring-rose">
+            <span class="ml-2 text-sm text-gray-600">Remember me</span>
+          </label>
+          <a href="#" class="text-sm text-rose hover:text-rose-dark font-semibold transition">
+            Forgot Password?
+          </a>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          class="w-full bg-rose text-white py-4 rounded-full font-semibold hover:bg-rose-dark transition shadow-lg hover:shadow-xl"
+        >
+          Login
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="relative my-8">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-300"></div>
+        </div>
+        <div class="relative flex justify-center text-sm">
+          <span class="px-4 bg-cream text-gray-500">Or continue with</span>
+        </div>
+      </div>
+
+      <!-- Social Login (Optional) -->
+      <div class="grid grid-cols-2 gap-4">
+        <button class="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-300 rounded-xl hover:border-rose hover:text-rose transition">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+          <span class="font-semibold text-sm">Facebook</span>
+        </button>
+        <button class="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-300 rounded-xl hover:border-rose hover:text-rose transition">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+          </svg>
+          <span class="font-semibold text-sm">Google</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Register Link -->
+    <p class="text-center mt-8 text-gray-600">
+      Don't have an account? 
+      <a href="{% url 'register' %}" class="text-rose font-semibold hover:text-rose-dark transition">
+        Create Account
+      </a>
+    </p>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Wishlist — Lushera{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-white min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between mb-12">
+      <h1 class="text-4xl font-serif font-bold">My Wishlist</h1>
+      <p class="text-gray-600">{{ wishlist.count }} item{{ wishlist.count|pluralize }}</p>
+    </div>
+
+    {% if wishlist.products.all %}
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {% for product in wishlist.products.all %}
+      <div class="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300">
+        
+        <!-- Product Image -->
+        <a href="{% url 'product_detail' product.slug %}" class="block relative overflow-hidden aspect-[3/4]">
+          {% if product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+          {% else %}
+          <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+            <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          {% endif %}
+          
+          <!-- Tag Badge -->
+          {% if product.tag %}
+          <span class="absolute top-3 left-3 bg-rose text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide">
+            {{ product.get_tag_display }}
+          </span>
+          {% endif %}
+          
+          <!-- Remove from Wishlist -->
+          <form method="post" action="{% url 'toggle_wishlist' product.id %}" class="absolute top-3 right-3">
+            {% csrf_token %}
+            <button type="submit" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-50 transition group/btn">
+              <svg class="w-5 h-5 text-rose fill-current" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+            </button>
+          </form>
+        </a>
+
+        <!-- Product Info -->
+        <div class="p-4">
+          <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">{{ product.subcategory.name }}</p>
+          <h3 class="font-semibold text-sm mb-2 line-clamp-2 group-hover:text-rose transition">
+            <a href="{% url 'product_detail' product.slug %}">{{ product.name }}</a>
+          </h3>
+          
+          <div class="flex items-center gap-2 mb-3">
+            {% if product.discount_price %}
+            <span class="text-lg font-bold text-rose">Rs. {{ product.discount_price|floatformat:0 }}</span>
+            <span class="text-sm text-gray-400 line-through">Rs. {{ product.price|floatformat:0 }}</span>
+            {% else %}
+            <span class="text-lg font-bold text-charcoal">Rs. {{ product.price|floatformat:0 }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Add to Cart Button -->
+          <a href="{% url 'product_detail' product.slug %}" class="block w-full bg-rose text-white text-center py-3 rounded-full text-sm font-semibold hover:bg-rose-dark transition">
+            Add to Cart
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty Wishlist -->
+    <div class="text-center py-20">
+      <svg class="w-24 h-24 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+      </svg>
+      <h3 class="text-3xl font-serif font-bold mb-4 text-gray-700">Your wishlist is empty</h3>
+      <p class="text-gray-600 mb-8">Save your favorite products for later</p>
+      <a href="{% url 'search' %}" class="inline-block bg-rose text-white px-10 py-4 rounded-full font-semibold hover:bg-rose-dark transition">
+        Discover Products
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

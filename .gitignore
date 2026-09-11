@@ -34,3 +34,4 @@ staticfiles/
 *.swo
 .DS_Store
 Thumbs.db
+*.fig

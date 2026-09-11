@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Address — Lushera{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-cream min-h-screen">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <a href="{% url 'profile' %}" class="inline-flex items-center text-rose hover:text-rose-dark transition mb-4">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to Profile
+      </a>
+      <h1 class="text-4xl font-serif font-bold">Edit Address</h1>
+      <p class="text-gray-600 mt-2">Update your shipping address</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-2xl p-8 shadow-lg">
+      <form method="post">
+        {% csrf_token %}
+        
+        <div class="space-y-6">
+          <!-- Full Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.full_name.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Address Line 1 -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Street Address *</label>
+            {{ form.address_line1 }}
+            {% if form.address_line1.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.address_line1.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Address Line 2 -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Apartment, Suite, etc. (Optional)</label>
+            {{ form.address_line2 }}
+          </div>
+
+          <!-- City, State, Postal Code -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">City *</label>
+              {{ form.city }}
+              {% if form.city.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.city.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">State/Province</label>
+              {{ form.state }}
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Postal Code *</label>
+              {{ form.postal_code }}
+              {% if form.postal_code.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.postal_code.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Country -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Country *</label>
+            {{ form.country }}
+            {% if form.country.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.country.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Set as Default -->
+          <div class="flex items-center">
+            {{ form.is_default }}
+            <label for="id_is_default" class="ml-2 text-sm font-medium text-gray-700">
+              Set as default address
+            </label>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-4 mt-8">
+          <button type="submit" class="flex-1 bg-rose text-white py-4 rounded-full font-semibold hover:bg-rose-dark transition">
+            Update Address
+          </button>
+          <a href="{% url 'profile' %}" class="flex-1 bg-gray-200 text-gray-700 py-4 rounded-full font-semibold hover:bg-gray-300 transition text-center">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

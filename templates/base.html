@@ -1,0 +1,799 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Lushera — Luxury Cosmetics{% endblock %}</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FFF8F3',
+            beige: '#F5F0EB',
+            rose: '#FF6B9D',
+            'rose-dark': '#E5527D',
+            gold: '#D4AF37',
+            charcoal: '#1A1A1A',
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          },
+        }
+      }
+    }
+  </script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Swiper.js for sliders -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+  
+  <!-- Alpine.js for interactivity -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <!-- Swiper.js script (load after Alpine) -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  
+  {% block extra_css %}{% endblock %}
+  
+  <style>
+    [x-cloak] { display: none !important; }
+    
+    /* Prevent horizontal scroll */
+    html, body {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
+    
+    body {
+      position: relative;
+    }
+    
+    /* Placeholder for missing images */
+    .image-placeholder {
+      background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+
+<body class="font-sans bg-white text-charcoal" x-data="{ 
+  mobileMenuOpen: false, 
+  cartOpen: false, 
+  searchOpen: false,
+  cartCount: {{ cart_count|default:0 }},
+  wishlistCount: {{ wishlist_count|default:0 }},
+  toasts: [],
+  showToast(message, type = 'success') {
+    const id = Date.now();
+    this.toasts.push({ id, message, type });
+    setTimeout(() => {
+      this.toasts = this.toasts.filter(t => t.id !== id);
+    }, 3000);
+  }
+}">
+
+  <!-- Top Banner -->
+  <div class="bg-rose text-white text-center py-2 text-sm">
+    ✨ Free Shipping on Orders Over Rs. 3,000 | Shop Now!
+  </div>
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        
+        <!-- Logo -->
+        <div class="flex-shrink-0">
+          <a href="{% url 'home' %}" class="text-2xl font-serif font-bold text-rose">
+            Lushera
+          </a>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <div class="hidden md:flex items-center space-x-8">
+          <a href="{% url 'home' %}" class="text-sm font-medium uppercase tracking-wide hover:text-rose transition {% if request.resolver_match.url_name == 'home' %}text-rose{% endif %}">Home</a>
+          <a href="{% url 'search' %}" class="text-sm font-medium uppercase tracking-wide hover:text-rose transition {% if request.resolver_match.url_name == 'search' %}text-rose{% endif %}">Shop</a>
+          
+          <!-- Categories Dropdown -->
+          <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open" @click.outside="open = false" class="text-sm font-medium uppercase tracking-wide hover:text-rose transition flex items-center gap-1">
+              Categories
+              <svg class="w-4 h-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div x-show="open" x-cloak
+              x-transition:enter="transition ease-out duration-200"
+              x-transition:enter-start="opacity-0 -translate-y-2"
+              x-transition:enter-end="opacity-100 translate-y-0"
+              x-transition:leave="transition ease-in duration-150"
+              x-transition:leave-start="opacity-100 translate-y-0"
+              x-transition:leave-end="opacity-0 -translate-y-2"
+              class="absolute top-full left-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 z-50">
+              <!-- Arrow pointer -->
+              <div class="absolute -top-2 left-6 w-4 h-4 bg-white border-l border-t border-gray-100 rotate-45"></div>
+              <a href="{% url 'category_list' 'makeup' %}" @click="open = false" class="flex items-center gap-3 px-5 py-3 hover:bg-rose/5 hover:text-rose transition">
+                <span class="text-xl">💄</span>
+                <span class="text-sm font-medium">Makeup</span>
+              </a>
+              <a href="{% url 'category_list' 'face' %}" @click="open = false" class="flex items-center gap-3 px-5 py-3 hover:bg-rose/5 hover:text-rose transition">
+                <span class="text-xl">🧴</span>
+                <span class="text-sm font-medium">Face Care</span>
+              </a>
+              <a href="{% url 'category_list' 'hair' %}" @click="open = false" class="flex items-center gap-3 px-5 py-3 hover:bg-rose/5 hover:text-rose transition">
+                <span class="text-xl">💇</span>
+                <span class="text-sm font-medium">Hair Care</span>
+              </a>
+              <a href="{% url 'category_list' 'wellness' %}" @click="open = false" class="flex items-center gap-3 px-5 py-3 hover:bg-rose/5 hover:text-rose transition">
+                <span class="text-xl">🌿</span>
+                <span class="text-sm font-medium">Wellness</span>
+              </a>
+              <div class="border-t border-gray-100 my-1"></div>
+              <a href="{% url 'search' %}" @click="open = false" class="flex items-center gap-3 px-5 py-3 hover:bg-rose/5 hover:text-rose transition">
+                <span class="text-xl">✨</span>
+                <span class="text-sm font-medium">All Products</span>
+              </a>
+            </div>
+          </div>
+
+          <a href="{% url 'contact' %}" class="text-sm font-medium uppercase tracking-wide hover:text-rose transition {% if request.resolver_match.url_name == 'contact' %}text-rose{% endif %}">Contact</a>
+        </div>
+
+        <!-- Right Icons -->
+        <div class="flex items-center space-x-4">
+          <!-- Search -->
+          <button @click="searchOpen = true" class="p-2 hover:text-rose transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </button>
+
+          <!-- Wishlist -->
+          <a href="{% url 'wishlist' %}" class="relative p-2 hover:text-rose transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+            <span x-show="wishlistCount > 0" class="absolute -top-1 -right-1 bg-rose text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" x-text="wishlistCount"></span>
+          </a>
+
+          <!-- Cart -->
+          <button @click="cartOpen = true" class="relative p-2 hover:text-rose transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+            <span x-show="cartCount > 0" class="absolute -top-1 -right-1 bg-rose text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" x-text="cartCount"></span>
+          </button>
+
+          <!-- User -->
+          {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}" class="p-2 hover:text-rose transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </a>
+          {% else %}
+          <a href="{% url 'login' %}" class="text-sm font-medium uppercase tracking-wide hover:text-rose transition">Login</a>
+          {% endif %}
+
+          <!-- Mobile Menu Toggle -->
+          <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div x-show="mobileMenuOpen" x-cloak @click.away="mobileMenuOpen = false" class="md:hidden border-t border-gray-200">
+      <div class="px-4 py-4 space-y-1">
+        <a href="{% url 'home' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-rose/5 hover:text-rose transition text-sm font-medium uppercase tracking-wide">
+          🏠 Home
+        </a>
+        <a href="{% url 'search' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-rose/5 hover:text-rose transition text-sm font-medium uppercase tracking-wide">
+          🛍️ Shop
+        </a>
+        <div class="px-3 py-2">
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Categories</p>
+          <div class="space-y-1 pl-2">
+            <a href="{% url 'category_list' 'makeup' %}" class="flex items-center gap-2 py-2 hover:text-rose transition text-sm">💄 Makeup</a>
+            <a href="{% url 'category_list' 'face' %}" class="flex items-center gap-2 py-2 hover:text-rose transition text-sm">🧴 Face Care</a>
+            <a href="{% url 'category_list' 'hair' %}" class="flex items-center gap-2 py-2 hover:text-rose transition text-sm">💇 Hair Care</a>
+            <a href="{% url 'category_list' 'wellness' %}" class="flex items-center gap-2 py-2 hover:text-rose transition text-sm">🌿 Wellness</a>
+          </div>
+        </div>
+        <a href="{% url 'contact' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-rose/5 hover:text-rose transition text-sm font-medium uppercase tracking-wide">
+          📞 Contact
+        </a>
+        <div class="border-t border-gray-100 pt-3 mt-2">
+          {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-rose/5 hover:text-rose transition text-sm font-medium uppercase tracking-wide">
+            👤 My Account
+          </a>
+          <a href="{% url 'logout' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition text-sm font-medium uppercase tracking-wide">
+            🚪 Logout
+          </a>
+          {% else %}
+          <a href="{% url 'login' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-rose/5 hover:text-rose transition text-sm font-medium uppercase tracking-wide">
+            🔑 Login
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Search Modal -->
+  <div x-show="searchOpen" x-cloak @click.self="searchOpen = false" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-8 relative">
+      <button @click="searchOpen = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+      
+      <h3 class="text-2xl font-serif font-bold mb-6">Search Products</h3>
+      
+      <form action="{% url 'search' %}" method="get" class="mb-6">
+        <div class="relative">
+          <input type="search" name="q" placeholder="Search for products..." class="w-full px-6 py-4 pr-32 border-2 border-gray-200 rounded-full focus:border-rose focus:outline-none text-lg">
+          <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 bg-rose text-white px-8 py-3 rounded-full font-medium hover:bg-rose-dark transition">
+            Search
+          </button>
+        </div>
+      </form>
+      
+      <div>
+        <p class="text-sm text-gray-500 mb-3">Popular Searches:</p>
+        <div class="flex flex-wrap gap-2">
+          <a href="{% url 'search' %}?q=lipstick" class="px-4 py-2 border border-gray-300 rounded-full text-sm hover:border-rose hover:text-rose transition">Lipstick</a>
+          <a href="{% url 'search' %}?q=foundation" class="px-4 py-2 border border-gray-300 rounded-full text-sm hover:border-rose hover:text-rose transition">Foundation</a>
+          <a href="{% url 'search' %}?q=serum" class="px-4 py-2 border border-gray-300 rounded-full text-sm hover:border-rose hover:text-rose transition">Serum</a>
+          <a href="{% url 'search' %}?q=mascara" class="px-4 py-2 border border-gray-300 rounded-full text-sm hover:border-rose hover:text-rose transition">Mascara</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div x-show="cartOpen" x-cloak @click.self="cartOpen = false" class="fixed inset-0 z-50 bg-black bg-opacity-50">
+    <div x-show="cartOpen" x-transition:enter="transform transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transform transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full" class="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col">
+      
+      <!-- Cart Header -->
+      <div class="flex items-center justify-between p-6 border-b">
+        <h3 class="text-xl font-serif font-bold">Shopping Cart</h3>
+        <button @click="cartOpen = false" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Cart Items -->
+      <div class="flex-1 overflow-y-auto p-6">
+        {% if cart_items_preview %}
+          <div class="space-y-4 cart-items-container">
+            {% for item in cart_items_preview %}
+            <div class="bg-cream rounded-xl p-4" id="cart-item-{{ item.id }}">
+              <div class="flex gap-4 mb-3">
+                {% if item.product.image %}
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-20 h-24 object-cover rounded-lg flex-shrink-0">
+                {% else %}
+                <div class="w-20 h-24 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center">
+                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                {% endif %}
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-start justify-between mb-2">
+                    <h4 class="font-semibold text-sm line-clamp-2 flex-1">{{ item.product.name }}</h4>
+                    <button onclick="removeFromCart({{ item.id }}, event)" class="ml-2 text-red-500 hover:text-red-700 transition">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+                  </div>
+                  {% if item.variant %}
+                  <p class="text-xs text-gray-600 mb-2">
+                    {% if item.variant.color %}{{ item.variant.get_color_display }}{% endif %}
+                    {% if item.variant.size %} • {{ item.variant.size }}{% endif %}
+                  </p>
+                  {% endif %}
+                  <p class="text-lg font-bold text-rose">Rs. {{ item.product.final_price|floatformat:0 }}</p>
+                </div>
+              </div>
+              
+              <!-- Quantity Controls -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 bg-white rounded-full px-2 py-1">
+                  <button onclick="updateCartQuantity({{ item.id }}, 'decrease', event)" class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-rose hover:text-rose transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                    </svg>
+                  </button>
+                  <span class="w-8 text-center font-semibold" id="qty-{{ item.id }}">{{ item.quantity }}</span>
+                  <button onclick="updateCartQuantity({{ item.id }}, 'increase', event)" class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-rose hover:text-rose transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="text-sm font-bold text-charcoal" id="subtotal-{{ item.id }}">Rs. {{ item.subtotal|floatformat:0 }}</p>
+              </div>
+            </div>
+            {% endfor %}
+            {% if cart_count > 3 %}
+            <p class="text-center text-sm text-gray-600 py-2">+ {{ cart_count|add:"-3" }} more item{{ cart_count|add:"-3"|pluralize }}</p>
+            {% endif %}
+          </div>
+        {% else %}
+          <p class="text-center text-gray-500 py-12">Your cart is empty</p>
+        {% endif %}
+      </div>
+
+      <!-- Cart Footer -->
+      <div class="border-t p-6 space-y-4 cart-summary">
+        {% if cart_items_preview %}
+        <!-- Subtotal and Shipping -->
+        <div class="space-y-2 mb-4">
+          <div class="flex justify-between text-gray-600">
+            <span>Subtotal</span>
+            <span class="font-semibold cart-subtotal">Rs. {{ cart_total|floatformat:0 }}</span>
+          </div>
+          <div class="flex justify-between text-gray-600">
+            <span>Shipping</span>
+            <span class="shipping-cost">
+              {% if cart_total >= 3000 %}
+              <span class="text-green-600 font-semibold">Free</span>
+              {% else %}
+              <span class="font-semibold">Rs. 200</span>
+              {% endif %}
+            </span>
+          </div>
+          {% if cart_total < 3000 %}
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-3 free-shipping-container">
+            <p class="text-xs text-yellow-800 free-shipping-remaining">
+              Add Rs. <span class="remaining-amount">{{ 3000|add:cart_total|floatformat:0 }}</span> more for free shipping!
+            </p>
+            <div class="w-full bg-yellow-200 rounded-full h-2 mt-2">
+              <div class="bg-yellow-600 h-2 rounded-full transition-all free-shipping-progress" style="width: {% widthratio cart_total 3000 100 %}%"></div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        
+        <div class="flex justify-between text-lg font-bold border-t pt-4">
+          <span>Total:</span>
+          <span class="text-rose text-2xl cart-grand-total">
+            Rs. {% if cart_total >= 3000 %}{{ cart_total|floatformat:0 }}{% else %}{{ cart_total|add:200|floatformat:0 }}{% endif %}
+          </span>
+        </div>
+        {% else %}
+        <div class="flex justify-between text-lg font-bold">
+          <span>Total:</span>
+          <span class="text-rose cart-grand-total">Rs. 0</span>
+        </div>
+        {% endif %}
+        <a href="{% url 'cart' %}" class="block w-full bg-rose text-white text-center py-4 rounded-full font-medium hover:bg-rose-dark transition">
+          View Cart
+        </a>
+        <a href="{% url 'checkout' %}" class="block w-full bg-charcoal text-white text-center py-4 rounded-full font-medium hover:bg-gray-800 transition">
+          Checkout
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications (includes Django messages) -->
+  <div class="fixed top-24 right-4 z-50 space-y-2">
+    <template x-for="toast in toasts" :key="toast.id">
+      <div x-show="true" 
+           x-transition:enter="transform transition ease-out duration-300"
+           x-transition:enter-start="translate-x-full opacity-0"
+           x-transition:enter-end="translate-x-0 opacity-100"
+           x-transition:leave="transform transition ease-in duration-200"
+           x-transition:leave-start="translate-x-0 opacity-100"
+           x-transition:leave-end="translate-x-full opacity-0"
+           class="bg-white rounded-lg shadow-lg p-4 max-w-sm border-l-4"
+           :class="{
+             'border-green-500': toast.type === 'success',
+             'border-red-500': toast.type === 'error',
+             'border-blue-500': toast.type === 'info',
+             'border-yellow-500': toast.type === 'warning'
+           }">
+        <div class="flex items-start gap-3">
+          <!-- Icon -->
+          <div class="flex-shrink-0">
+            <template x-if="toast.type === 'success'">
+              <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </template>
+            <template x-if="toast.type === 'error'">
+              <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </template>
+            <template x-if="toast.type === 'info'">
+              <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </template>
+            <template x-if="toast.type === 'warning'">
+              <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+            </template>
+          </div>
+          
+          <!-- Message -->
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-900" x-text="toast.message"></p>
+          </div>
+          
+          <!-- Close Button -->
+          <button @click="toasts = toasts.filter(t => t.id !== toast.id)" class="flex-shrink-0 text-gray-400 hover:text-gray-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Main Content -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-charcoal text-white mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+        
+        <!-- Brand -->
+        <div>
+          <h3 class="text-2xl font-serif font-bold text-rose mb-4">Lushera</h3>
+          <p class="text-gray-400 text-sm mb-6">
+            Your destination for premium cosmetics and beauty products. Discover the perfect products to enhance your natural beauty.
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-rose transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-rose transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-rose transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="font-semibold text-lg mb-4 uppercase tracking-wide">Quick Links</h4>
+          <ul class="space-y-3 text-sm text-gray-400">
+            <li><a href="{% url 'home' %}" class="hover:text-rose transition">Home</a></li>
+            <li><a href="{% url 'search' %}" class="hover:text-rose transition">Shop All</a></li>
+            <li><a href="{% url 'category_list' 'makeup' %}" class="hover:text-rose transition">Makeup</a></li>
+            <li><a href="{% url 'category_list' 'face' %}" class="hover:text-rose transition">Skincare</a></li>
+            <li><a href="{% url 'category_list' 'hair' %}" class="hover:text-rose transition">Haircare</a></li>
+          </ul>
+        </div>
+
+        <!-- Customer Service -->
+        <div>
+          <h4 class="font-semibold text-lg mb-4 uppercase tracking-wide">Customer Service</h4>
+          <ul class="space-y-3 text-sm text-gray-400">
+            <li><a href="{% url 'order_list' %}" class="hover:text-rose transition">Track Order</a></li>
+            <li><a href="#" class="hover:text-rose transition">Shipping Info</a></li>
+            <li><a href="#" class="hover:text-rose transition">Returns</a></li>
+            <li><a href="#" class="hover:text-rose transition">FAQs</a></li>
+            <li><a href="#" class="hover:text-rose transition">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <!-- Newsletter -->
+        <div>
+          <h4 class="font-semibold text-lg mb-4 uppercase tracking-wide">Newsletter</h4>
+          <p class="text-sm text-gray-400 mb-4">Subscribe to get special offers and updates</p>
+          <form class="space-y-3">
+            {% csrf_token %}
+            <input type="email" placeholder="Your email" class="w-full px-4 py-3 rounded-full bg-gray-800 border border-gray-700 focus:border-rose focus:outline-none text-sm">
+            <button type="submit" class="w-full bg-rose text-white py-3 rounded-full font-medium hover:bg-rose-dark transition">
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="border-t border-gray-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+          <p>&copy; 2026 Lushera. All rights reserved.</p>
+          <p>Designed with ❤️ for beauty lovers</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  {% block extra_js %}{% endblock %}
+  
+  <script>
+    // Get CSRF token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    
+    // Update cart quantity without page reload
+    function updateCartQuantity(itemId, action, event) {
+      event.preventDefault();
+      const csrftoken = getCookie('csrftoken');
+      
+      fetch(`/cart/update/${itemId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: `action=${action}`
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          // Update quantity display
+          const qtyElement = document.getElementById(`qty-${itemId}`);
+          if (qtyElement) {
+            qtyElement.textContent = data.quantity;
+          }
+          
+          // Update subtotal
+          const subtotalElement = document.getElementById(`subtotal-${itemId}`);
+          if (subtotalElement) {
+            subtotalElement.textContent = `Rs. ${Math.round(data.subtotal)}`;
+          }
+          
+          // Update Alpine.js cart count
+          if (window.Alpine && document.body._x_dataStack && document.body._x_dataStack[0]) {
+            const alpineData = document.body._x_dataStack[0];
+            alpineData.cartCount = data.cart_count;
+            
+            // Show toast notification
+            if (action === 'increase') {
+              alpineData.showToast('Quantity increased', 'success');
+            } else if (action === 'decrease') {
+              alpineData.showToast('Quantity decreased', 'success');
+            }
+          }
+          
+          // Update cart total
+          updateCartSummary(data.cart_total);
+          
+          // If quantity is 0, remove the item from display
+          if (data.quantity === 0) {
+            const itemElement = document.getElementById(`cart-item-${itemId}`);
+            if (itemElement) {
+              itemElement.remove();
+            }
+            
+            // Check if cart is empty
+            checkEmptyCart();
+          }
+        } else if (data.error) {
+          // Show error toast
+          if (window.Alpine && document.body._x_dataStack && document.body._x_dataStack[0]) {
+            document.body._x_dataStack[0].showToast(data.error, 'warning');
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Show error toast
+        if (window.Alpine && document.body._x_dataStack && document.body._x_dataStack[0]) {
+          document.body._x_dataStack[0].showToast('Failed to update cart', 'error');
+        }
+        // Fallback to page reload if AJAX fails
+        setTimeout(() => window.location.reload(), 1000);
+      });
+    }
+    
+    // Remove item from cart
+    function removeFromCart(itemId, event) {
+      event.preventDefault();
+      
+      if (!confirm('Remove this item from cart?')) {
+        return;
+      }
+      
+      const csrftoken = getCookie('csrftoken');
+      
+      fetch(`/cart/remove/${itemId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken,
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          // Remove item from display
+          const itemElement = document.getElementById(`cart-item-${itemId}`);
+          if (itemElement) {
+            itemElement.remove();
+          }
+          
+          // Update Alpine.js cart count and show toast
+          if (window.Alpine && document.body._x_dataStack && document.body._x_dataStack[0]) {
+            const alpineData = document.body._x_dataStack[0];
+            alpineData.cartCount = data.cart_count;
+            alpineData.showToast('Item removed from cart', 'success');
+          }
+          
+          // Update cart total
+          updateCartSummary(data.cart_total);
+          
+          // Check if cart is empty
+          checkEmptyCart();
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Show error toast
+        if (window.Alpine && document.body._x_dataStack && document.body._x_dataStack[0]) {
+          document.body._x_dataStack[0].showToast('Failed to remove item', 'error');
+        }
+        // Fallback to page reload if AJAX fails
+        setTimeout(() => window.location.reload(), 1000);
+      });
+    }
+    
+    // Update cart summary (shipping and total)
+    function updateCartSummary(cartTotal) {
+      const shipping = cartTotal >= 3000 ? 0 : 200;
+      const grandTotal = cartTotal + shipping;
+      
+      // Update subtotal
+      const subtotalElements = document.querySelectorAll('.cart-subtotal');
+      subtotalElements.forEach(el => {
+        el.textContent = `Rs. ${Math.round(cartTotal)}`;
+      });
+      
+      // Update shipping display
+      const shippingElements = document.querySelectorAll('.shipping-cost');
+      shippingElements.forEach(el => {
+        if (shipping === 0) {
+          el.innerHTML = '<span class="text-green-600 font-semibold">Free</span>';
+        } else {
+          el.innerHTML = `<span class="font-semibold">Rs. ${shipping}</span>`;
+        }
+      });
+      
+      // Update total
+      const totalElements = document.querySelectorAll('.cart-grand-total');
+      totalElements.forEach(el => {
+        el.textContent = `Rs. ${Math.round(grandTotal)}`;
+      });
+      
+      // Update progress bar
+      if (cartTotal < 3000) {
+        const remaining = 3000 - cartTotal;
+        const percentage = (cartTotal / 3000) * 100;
+        
+        const progressBars = document.querySelectorAll('.free-shipping-progress');
+        progressBars.forEach(bar => {
+          bar.style.width = `${percentage}%`;
+        });
+        
+        const remainingTexts = document.querySelectorAll('.free-shipping-remaining');
+        remainingTexts.forEach(text => {
+          const remainingSpan = text.querySelector('.remaining-amount');
+          if (remainingSpan) {
+            remainingSpan.textContent = Math.round(remaining);
+          } else {
+            text.textContent = `Add Rs. ${Math.round(remaining)} more for free shipping!`;
+          }
+        });
+        
+        // Show progress bar container
+        const progressContainers = document.querySelectorAll('.free-shipping-container');
+        progressContainers.forEach(container => {
+          container.style.display = 'block';
+        });
+      } else {
+        // Hide progress bar when free shipping achieved
+        const progressContainers = document.querySelectorAll('.free-shipping-container');
+        progressContainers.forEach(container => {
+          container.style.display = 'none';
+        });
+      }
+    }
+    
+    // Check if cart is empty and show empty message
+    function checkEmptyCart() {
+      const cartItems = document.querySelectorAll('[id^="cart-item-"]');
+      if (cartItems.length === 0) {
+        const cartItemsContainer = document.querySelector('.cart-items-container');
+        if (cartItemsContainer) {
+          cartItemsContainer.innerHTML = '<p class="text-center text-gray-500 py-12">Your cart is empty</p>';
+        }
+        
+        // Hide cart summary
+        const cartSummary = document.querySelector('.cart-summary');
+        if (cartSummary) {
+          cartSummary.style.display = 'none';
+        }
+      }
+    }
+  </script>
+  
+  <!-- Convert Django Messages to Toasts -->
+  {% if messages %}
+  <script>
+    document.addEventListener('alpine:init', () => {
+      // Wait for Alpine to be ready
+      setTimeout(() => {
+        {% for message in messages %}
+        const messageType = '{{ message.tags }}';
+        const messageText = '{{ message|escapejs }}';
+        
+        // Map Django message tags to toast types
+        let toastType = 'info';
+        if (messageType.includes('success')) toastType = 'success';
+        else if (messageType.includes('error') || messageType.includes('danger')) toastType = 'error';
+        else if (messageType.includes('warning')) toastType = 'warning';
+        
+        // Trigger toast
+        if (window.Alpine && window.Alpine.store) {
+          // Use Alpine store if available
+          const appData = document.querySelector('[x-data]').__x.$data;
+          if (appData && appData.showToast) {
+            appData.showToast(messageText, toastType);
+          }
+        }
+        {% endfor %}
+      }, 100);
+    });
+  </script>
+  {% endif %}
+</body>
+</html>

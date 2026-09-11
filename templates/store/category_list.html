@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category_type_display }} — Lushera{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="text-center mb-16">
+      <p class="text-rose font-medium uppercase tracking-widest text-sm mb-2">Explore</p>
+      <h1 class="text-4xl md:text-5xl font-serif font-bold mb-4">{{ category_type_display }}</h1>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+        Browse our curated collection of {{ category_type_display|lower }} products
+      </p>
+    </div>
+
+    <!-- Categories Grid -->
+    {% if categories %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {% for category in categories %}
+      <a href="{% url 'subcategory_list' category.slug %}" class="group relative overflow-hidden rounded-2xl aspect-[4/5] shadow-lg hover:shadow-2xl transition-all duration-300">
+        {% if category.image %}
+        <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+        {% else %}
+        <div class="w-full h-full bg-gradient-to-br from-rose to-rose-dark"></div>
+        {% endif %}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
+          <h3 class="text-3xl font-serif font-bold mb-2">{{ category.name }}</h3>
+          <p class="text-sm opacity-90">{{ category.subcategories.count }} Collections →</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20">
+      <h3 class="text-2xl font-serif font-bold mb-4 text-gray-700">No Categories Found</h3>
+      <p class="text-gray-600 mb-8">Check back soon for new collections</p>
+      <a href="{% url 'home' %}" class="inline-block bg-rose text-white px-8 py-3 rounded-full font-medium hover:bg-rose-dark transition">
+        Back to Home
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

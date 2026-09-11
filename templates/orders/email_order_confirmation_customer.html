@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #FF6B9D, #E5527D); padding: 40px 30px; text-align: center; }
+    .header h1 { color: white; margin: 0; font-size: 32px; }
+    .header p { color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 16px; }
+    .checkmark { font-size: 60px; margin-bottom: 10px; }
+    .body { padding: 30px; }
+    .greeting { font-size: 18px; color: #333; margin-bottom: 20px; }
+    .section-title { font-size: 14px; font-weight: bold; color: #FF6B9D; text-transform: uppercase; letter-spacing: 1px; margin: 25px 0 10px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    .info-box { background: #f9f9f9; border-radius: 8px; padding: 15px; }
+    .info-box .label { font-size: 12px; color: #888; margin-bottom: 4px; }
+    .info-box .value { font-size: 15px; font-weight: bold; color: #333; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    th { background: #FF6B9D; color: white; padding: 12px; text-align: left; font-size: 13px; }
+    td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+    .total-row td { font-weight: bold; font-size: 16px; background: #fff5f8; color: #FF6B9D; }
+    .steps { display: flex; justify-content: space-between; margin: 20px 0; }
+    .step { text-align: center; flex: 1; }
+    .step-icon { width: 40px; height: 40px; background: #FF6B9D; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; color: white; font-size: 18px; }
+    .step-label { font-size: 12px; color: #666; }
+    .btn { display: inline-block; background: #FF6B9D; color: white; padding: 14px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; font-size: 15px; }
+    .footer { background: #f9f9f9; padding: 20px 30px; text-align: center; color: #888; font-size: 13px; border-top: 1px solid #eee; }
+    .cod-notice { background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 8px; padding: 15px 20px; margin: 20px 0; }
+    .cod-notice p { margin: 0; color: #92400E; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="checkmark">✅</div>
+      <h1>Order Confirmed!</h1>
+      <p>Thank you for shopping with Lushera</p>
+    </div>
+
+    <div class="body">
+      <p class="greeting">Hi <strong>{{ order.shipping_name }}</strong>,</p>
+      <p style="color: #555; line-height: 1.6;">
+        Your order has been successfully placed! We're preparing your items and will notify you once they're shipped.
+      </p>
+
+      <!-- Order Info -->
+      <div class="section-title">Order Summary</div>
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="label">Order ID</div>
+          <div class="value">#{{ order.id }}</div>
+        </div>
+        <div class="info-box">
+          <div class="label">Order Date</div>
+          <div class="value">{{ order.created_at|date:"d M Y" }}</div>
+        </div>
+        <div class="info-box">
+          <div class="label">Payment</div>
+          <div class="value">{{ order.get_payment_method_display }}</div>
+        </div>
+        <div class="info-box">
+          <div class="label">Total Amount</div>
+          <div class="value" style="color: #FF6B9D;">Rs. {{ order.total_amount|floatformat:0 }}</div>
+        </div>
+      </div>
+
+      <!-- COD Notice -->
+      {% if order.payment_method == 'cod' %}
+      <div class="cod-notice">
+        <p>💵 <strong>Cash on Delivery:</strong> Please keep Rs. {{ order.total_amount|floatformat:0 }} ready at the time of delivery.</p>
+      </div>
+      {% endif %}
+
+      <!-- Order Items -->
+      <div class="section-title">Items Ordered</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Variant</th>
+            <th>Qty</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order.items.all %}
+          <tr>
+            <td><strong>{{ item.product_name }}</strong></td>
+            <td>{{ item.size }}{% if item.color %} / {{ item.color }}{% endif %}</td>
+            <td>{{ item.quantity }}</td>
+            <td>Rs. {{ item.price|floatformat:0 }}</td>
+          </tr>
+          {% endfor %}
+          <tr>
+            <td colspan="3" style="text-align: right; color: #888;">Subtotal:</td>
+            <td>Rs. {{ order.subtotal|floatformat:0 }}</td>
+          </tr>
+          <tr>
+            <td colspan="3" style="text-align: right; color: #888;">Shipping:</td>
+            <td>{% if order.shipping_cost > 0 %}Rs. {{ order.shipping_cost|floatformat:0 }}{% else %}<span style="color: green;">Free</span>{% endif %}</td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="3" style="text-align: right;">TOTAL:</td>
+            <td>Rs. {{ order.total_amount|floatformat:0 }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Shipping Address -->
+      <div class="section-title">Shipping To</div>
+      <div class="info-box" style="margin-bottom: 25px;">
+        <div class="value">{{ order.shipping_name }}</div>
+        <div style="color: #555; margin-top: 5px; line-height: 1.6;">
+          {{ order.shipping_address }}<br>
+          {{ order.shipping_city }}, {{ order.shipping_postal_code }}<br>
+          {{ order.shipping_country }}<br>
+          📞 {{ order.shipping_phone }}
+        </div>
+      </div>
+
+      <!-- What's Next -->
+      <div class="section-title">What Happens Next?</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-icon">📦</div>
+          <div class="step-label">Order<br>Processing</div>
+        </div>
+        <div class="step">
+          <div class="step-icon">🚚</div>
+          <div class="step-label">Out for<br>Delivery</div>
+        </div>
+        <div class="step">
+          <div class="step-icon">🏠</div>
+          <div class="step-label">Delivered<br>to You</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 25px;">
+        <a href="http://127.0.0.1:8000/orders/" class="btn">Track Your Order →</a>
+      </div>
+
+      <p style="color: #888; font-size: 13px; margin-top: 25px; text-align: center;">
+        Questions? Contact us at <a href="mailto:contact@lushera.com" style="color: #FF6B9D;">contact@lushera.com</a>
+        or call <strong>+92 300 1234567</strong>
+      </p>
+    </div>
+
+    <div class="footer">
+      <p>Thank you for choosing <strong>Lushera</strong> 💕</p>
+      <p>© 2026 Lushera. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
