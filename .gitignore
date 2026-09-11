@@ -1,0 +1,36 @@
+# ── Secrets ──────────────────────────────────────────────────────────────────
+.env
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Virtual environment ───────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Django ────────────────────────────────────────────────────────────────────
+db.sqlite3
+staticfiles/
+*.log
+
+# ── Media uploads (optional — remove if you want to track sample media) ───────
+# media/
+
+# ── IDE / OS ──────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
