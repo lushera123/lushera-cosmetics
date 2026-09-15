@@ -17,7 +17,7 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-   list_display  = (
+    list_display  = (
     'id', 'user_email', 'status', 'payment_method',
     'payment_status_badge', 'total_display', 'created_at'
 )
